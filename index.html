@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff;--surface:#fdf8f9;--surface2:#f9f0f3;
+    --border:#f0dde3;--border2:#e8c8d2;
+    --text:#1a0a0f;--text2:#7a4a58;--text3:#b88898;--text4:#d4aab8;
+    --pink:#c8547a;--pink-light:#f2d0db;--pink-mid:#e8a0b8;--pink-deep:#a03060;
+    --c443:#7a4898;--c412:#c8547a;--c410:#387860;--cnsci:#3860a8;
+    --crecall:#a86828;--cmemo:#888;
+    --r:6px;--rl:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lora',Georgia,serif;min-height:100vh;line-height:2;font-size:13px;}
+  .hdr{border-bottom:1px solid var(--border);padding:15px 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);z-index:100;}
+  .logo{font-weight:600;font-size:15px;color:var(--pink-deep);font-style:italic;}
+  .hdr-l{display:flex;align-items:baseline;gap:15px;}
+  .hdr-date{font-size:12px;color:var(--text3);}
+  .pills{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{font-size:11px;font-style:italic;padding:2px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--pink);background:var(--surface);}
+  .main{max-width:660px;margin:0 auto;padding:40px 26px 140px;}
+
+  /* SESSION SCREEN */
+  .ss{display:flex;flex-direction:column;gap:28px;padding-top:24px;}
+  .ss h2{font-size:24px;font-weight:500;letter-spacing:-.01em;line-height:1.5;}
+  .ss h2 em{color:var(--pink);font-weight:400;}
+  .ss p{font-size:13px;color:var(--text3);line-height:2;}
+  .ss-opts{display:flex;gap:10px;flex-wrap:wrap;}
+  .ss-btn{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:18px 24px;cursor:pointer;transition:all .15s;text-align:left;min-width:140px;}
+  .ss-btn:hover{border-color:var(--pink);background:var(--surface2);}
+  .ss-h{font-size:20px;font-weight:600;color:var(--pink);line-height:1;margin-bottom:3px;}
+  .ss-d{font-size:12px;color:var(--text2);line-height:1.8;}
+  .ss-l{font-size:11px;color:var(--text3);font-style:italic;line-height:2;}
+
+  /* DAY INPUT */
+  .di{display:flex;flex-direction:column;gap:28px;padding-top:24px;}
+  .di h2{font-size:24px;font-weight:500;letter-spacing:-.01em;line-height:1.5;}
+  .di h2 em{color:var(--pink);font-weight:400;}
+  .di-wrap{display:flex;gap:8px;align-items:center;max-width:340px;}
+  .di-inp{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:9px 13px;color:var(--text);font-family:'Lora',serif;font-size:13px;outline:none;transition:border-color .15s;}
+  .di-inp:focus{border-color:var(--pink);}
+  .di-inp::placeholder{color:var(--text4);font-style:italic;}
+  .qdays{display:flex;gap:5px;flex-wrap:wrap;max-width:480px;}
+  .qd{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 9px;font-size:11px;color:var(--text2);cursor:pointer;transition:all .12s;line-height:2;}
+  .qd:hover{border-color:var(--pink-mid);color:var(--pink);background:var(--surface2);}
+  .qd.off{color:var(--text4);}
+  .qd.exam{color:var(--pink-deep);border-color:var(--pink-light);font-style:italic;}
+
+  /* BUTTONS */
+  .btn{background:var(--pink);color:#fff;border:none;border-radius:var(--r);padding:9px 18px;font-family:'Lora',serif;font-weight:500;font-size:13px;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+  .btn:hover{opacity:.85;}
+  .btn-g{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--r);padding:8px 15px;font-family:'Lora',serif;font-size:13px;cursor:pointer;transition:all .15s;font-style:italic;}
+  .btn-g:hover{border-color:var(--pink-mid);color:var(--pink);}
+  .btn-e{background:var(--pink-deep);color:#fff;border:none;border-radius:var(--r);padding:8px 18px;font-family:'Lora',serif;font-weight:500;font-size:13px;cursor:pointer;transition:opacity .15s;}
+  .btn-e:hover{opacity:.8;}
+
+  /* DAY VIEW */
+  .dv{display:flex;flex-direction:column;gap:26px;}
+  .dh{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .dt{font-size:23px;font-weight:500;letter-spacing:-.01em;line-height:1.4;}
+  .dsub{font-size:12px;color:var(--text3);font-style:italic;line-height:2;}
+  .sbadge{display:inline-block;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:1px 11px;font-size:11px;color:var(--pink);font-style:italic;margin-top:3px;}
+  .stats{display:flex;gap:22px;}
+  .sv{font-size:19px;font-weight:600;color:var(--pink);line-height:1;}
+  .sl{font-size:11px;color:var(--text3);margin-top:2px;font-style:italic;}
+
+  .pb-wrap{display:flex;flex-direction:column;gap:6px;}
+  .pb-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);font-style:italic;}
+  .pb-bg{height:2px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .pb-fill{height:100%;background:var(--pink);border-radius:99px;transition:width .35s;}
+
+  .cp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .cp-name{font-size:11px;color:var(--text3);margin-bottom:5px;font-style:italic;}
+  .cp-bg{height:2px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:4px;}
+  .cp-bar{height:100%;border-radius:99px;transition:width .35s;}
+  .f443{background:var(--c443);}
+  .f412{background:var(--c412);}
+  .f410{background:var(--c410);}
+  .fnsci{background:var(--cnsci);}
+  .cp-cnt{font-size:11px;color:var(--text3);}
+
+  .sec{font-size:11px;color:var(--text3);font-style:italic;letter-spacing:.03em;margin-bottom:-16px;}
+  .blist{display:flex;flex-direction:column;gap:0;}
+  .bc{border-radius:var(--r);transition:background .1s;}
+  .bc:hover{background:var(--surface);}
+  .bc.done .bcon{color:var(--text4);text-decoration:line-through;}
+  .bc.done .btm{color:var(--text4);}
+  .bc.carried{background:#fff8f0;}
+  .bi{display:flex;align-items:flex-start;gap:13px;padding:10px 5px;}
+  .bchk{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;margin-top:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+  .bchk:hover{border-color:var(--pink);}
+  .bchk.chk{background:var(--pink);border-color:var(--pink);}
+  .bchk.chk::after{content:'';display:block;width:4px;height:7px;border:1.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);}
+  .bm{flex:1;min-width:0;}
+  .btop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
+  .ctag{font-size:10px;font-style:italic;padding:1px 7px;border-radius:20px;flex-shrink:0;border:1px solid;}
+  .t443{color:var(--c443);border-color:#d8ccee;background:#f5f2fc;}
+  .t412{color:var(--c412);border-color:var(--pink-light);background:var(--surface2);}
+  .t410{color:var(--c410);border-color:#c0ddd0;background:#f0f9f4;}
+  .tnsci{color:var(--cnsci);border-color:#c0d0ee;background:#f0f4fc;}
+  .trecall{color:var(--crecall);border-color:#e8d8b0;background:#fdf8ee;}
+  .tmemo{color:var(--cmemo);border-color:var(--border);background:var(--surface);}
+  .trest{color:var(--text3);border-color:var(--border);background:var(--surface);}
+  .tbadge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:500;flex-shrink:0;}
+  .tpost{background:#FAEEDA;color:#633806;border:1px solid #EF9F27;}
+  .tmt2{background:#E6F1FB;color:#185FA5;border:1px solid #85B7EB;}
+  .tmt1{background:#E1F5EE;color:#0F6E56;border:1px solid #5DCAA5;}
+  .cbadge{font-size:10px;font-style:italic;color:var(--crecall);border:1px solid #e8d8b0;background:#fdf8ee;padding:1px 6px;border-radius:20px;}
+  .bcon{font-size:13px;color:var(--text);line-height:2;}
+  .btm{font-size:11px;color:var(--text3);line-height:2;font-style:italic;}
+
+  .bbar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:12px 30px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:100;}
+  .bbar-l{font-size:12px;color:var(--text3);font-style:italic;}
+  .bbar-l strong{color:var(--pink);font-style:normal;}
+  .bbar-r{display:flex;gap:8px;}
+
+  .mo{position:fixed;inset:0;background:rgba(26,10,15,.18);z-index:200;display:flex;align-items:center;justify-content:center;padding:22px;}
+  .mc{background:#fff;border:1px solid var(--border);border-radius:var(--rl);padding:28px;max-width:430px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(200,84,122,.08);}
+  .mc h3{font-size:17px;font-weight:500;margin-bottom:7px;line-height:1.5;}
+  .mc p{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:2;}
+  .ml{display:flex;flex-direction:column;gap:5px;margin-bottom:22px;}
+  .mi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:9px;line-height:2;font-style:italic;}
+  .mid{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .ma{display:flex;gap:8px;justify-content:flex-end;}
+
+  .toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--pink-deep);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-style:italic;opacity:0;transition:all .25s;z-index:300;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .off-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px 24px;display:flex;flex-direction:column;gap:7px;}
+  .off-box h3{font-size:16px;font-weight:500;line-height:1.5;}
+  .off-box p{font-size:13px;color:var(--text2);line-height:2;font-style:italic;}
+  .wbanner{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px;}
+  .wbl{font-size:13px;font-weight:500;color:var(--text);}
+  .wbs{font-size:12px;color:var(--text3);font-style:italic;line-height:2;}
+  .exbox{background:var(--surface2);border:1px solid var(--pink-light);border-radius:var(--rl);padding:20px 24px;}
+  .exbox h3{font-size:16px;font-weight:500;color:var(--pink-deep);margin-bottom:3px;font-style:italic;line-height:1.5;}
+  .exbox p{font-size:13px;color:var(--text2);line-height:2;}
+  .rnote{font-size:12px;color:var(--text3);border-left:2px solid var(--pink-light);padding-left:13px;line-height:2;font-style:italic;}
+  .ibox{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;font-size:12px;color:var(--text3);line-height:2;font-style:italic;}
+
+  .hidden{display:none!important;}
+  @media(max-width:520px){
+    .hdr{padding:11px 14px;flex-direction:column;gap:7px;align-items:flex-start;}
+    .main{padding:22px 14px 125px;}
+    .dt{font-size:19px;}
+    .bbar{padding:10px 14px;}
+    .mc{padding:18px;}
+    .cp-grid{grid-template-columns:repeat(2,1fr);}
+    .pills{display:none;}
+    .ss-opts{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">study tracker</div>
+    <div class="hdr-date" id="hdrDate"></div>
+  </div>
+  <div class="pills">
+    <div class="pill">443 · Apr 20</div>
+    <div class="pill">412 · Apr 27</div>
+    <div class="pill">410 · Apr 30</div>
+    <div class="pill">NSCI · Apr 30</div>
+  </div>
+</header>
+<main class="main" id="main"></main>
+<div class="bbar" id="bbar" style="display:none">
+  <div class="bbar-l" id="bbarl"></div>
+  <div class="bbar-r">
+    <button class="btn-g" onclick="changeDay()">← change day</button>
+    <button class="btn-e" onclick="showEndDay()">end day</button>
+  </div>
+</div>
+<div class="mo hidden" id="mo"><div class="mc" id="mc"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DAY DEFINITIONS — correct days of week from Apr 8
+// Wed Apr 8   = work 12-5, mini (1 lec morning)
+// Thu Apr 9   = free, 5h cap → 3 lec
+// Fri Apr 10  = free, 6h cap → 4 lec
+// Sat Apr 11  = nothing
+// Sun Apr 12  = free, 4h cap → 2 lec
+// Mon Apr 13  = free, 10h cap → 5 lec
+// Tue Apr 14  = work 12-5, 7h cap → 4 lec (morning+evening)
+// Wed Apr 15  = free, 4h cap → 2 lec
+// Thu Apr 16  = 10h → 5 lec
+// Fri Apr 17  = 10h → 5 lec
+// Sat Apr 18  = 10h → 5 lec
+// Sun Apr 19  = 443 REVIEW only
+// Mon Apr 20  = EXAM 443 + 6h after → 4 lec
+// Tue Apr 21  = 10h → 5 lec
+// Wed Apr 22  = 10h → 5 lec
+// Thu Apr 23  = 10h → 5 lec
+// Fri Apr 24  = 10h → 5 lec
+// Sat Apr 25  = 10h → 5 lec
+// Sun Apr 26  = 412 REVIEW only
+// Mon Apr 27  = 412 review until 5pm + EXAM 412 at 6:30pm
+// Tue Apr 28  = review 410+NSCI (work 12-5, morning+evening)
+// Wed Apr 29  = review 410+NSCI
+// Thu Apr 30  = EXAM 410+NSCI
+// ══════════════════════════════════════════════════════
+const DAYS = {
+  "2026-04-08":{l:"Wed Apr 8", dn:"Wednesday", t:"free",                       cap:1,  note:"Late start — 1 lecture today."},
+  "2026-04-09":{l:"Thu Apr 9", dn:"Thursday",  t:"free",                       cap:3,  note:"5h day · 3 lectures"},
+  "2026-04-10":{l:"Fri Apr 10",dn:"Friday",    t:"free",                       cap:4,  note:"6h day · 4 lectures"},
+  "2026-04-11":{l:"Sat Apr 11",dn:"Saturday",  t:"off",        wh:"Work 8–2",  cap:0,  note:"Nothing today. Rest and passive listening only."},
+  "2026-04-12":{l:"Sun Apr 12",dn:"Sunday",    t:"free",                       cap:2,  note:"4h day · 2 lectures"},
+  "2026-04-13":{l:"Mon Apr 13",dn:"Monday",    t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-14":{l:"Tue Apr 14",dn:"Tuesday",   t:"work",       wh:"Work 12–5", cap:4,  note:"7h day · 4 lectures · morning + evening"},
+  "2026-04-15":{l:"Wed Apr 15",dn:"Wednesday", t:"free",                       cap:2,  note:"4h day · 2 lectures"},
+  "2026-04-16":{l:"Thu Apr 16",dn:"Thursday",  t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-17":{l:"Fri Apr 17",dn:"Friday",    t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-18":{l:"Sat Apr 18",dn:"Saturday",  t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-19":{l:"Sun Apr 19",dn:"Sunday",    t:"review",    rf:"443",        cap:0,  note:"443 review only — Intro → L1 → L2 → L3 → L4 → L5 → L6 → L8 → L10 → L11 → L13 → L14 → L15. No new material."},
+  "2026-04-20":{l:"Mon Apr 20",dn:"Monday",    t:"exam",      ex:["443"],      cap:4,  note:"Listen to 443 exam guide memo on the way in. After exam: 6h study window — 4 lectures."},
+  "2026-04-21":{l:"Tue Apr 21",dn:"Tuesday",   t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-22":{l:"Wed Apr 22",dn:"Wednesday", t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-23":{l:"Thu Apr 23",dn:"Thursday",  t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-24":{l:"Fri Apr 24",dn:"Friday",    t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-25":{l:"Sat Apr 25",dn:"Saturday",  t:"free",                       cap:5,  note:"10h day · 5 lectures"},
+  "2026-04-26":{l:"Sun Apr 26",dn:"Sunday",    t:"review",    rf:"412",        cap:0,  note:"412 review only — Wk1 through Wk14 start to finish. Record exam guide memo."},
+  "2026-04-27":{l:"Mon Apr 27",dn:"Monday",    t:"review-exam",rf:"412",ex:["412"],cap:0,note:"412 review 8am–5pm · Exam 412 at 6:30pm. Light skim only until 5, then rest before exam."},
+  "2026-04-28":{l:"Tue Apr 28",dn:"Tuesday",   t:"work-review",wh:"Work 12–5", rf:"410 + NSCI",cap:0,note:"Review 410 + NSCI morning (8–11am) and evening (5:30–9pm). Work 12–5."},
+  "2026-04-29":{l:"Wed Apr 29",dn:"Wednesday", t:"review",    rf:"410 + NSCI", cap:0,  note:"Final 410 + NSCI review — fix blanks from Tue only. Hard stop noon. Sleep early."},
+  "2026-04-30":{l:"Thu Apr 30",dn:"Thursday",  t:"exam",      ex:["410","NSCI"],cap:0, note:"Listen to 410 + NSCI summary memos on the way in. You're done after this."},
+};
+
+const ALL_DATES   = Object.keys(DAYS);
+const STUDY_DATES = ALL_DATES.filter(d=>["mini","free","work"].includes(DAYS[d].t));
+
+// ══════════════════════════════════════════════════════
+// LECTURE LIST — 50 total (443:13, 412:13, 410:9, NSCI:15)
+// ══════════════════════════════════════════════════════
+// ── LECTURE LIST ordered by priority: post-MT first, then MT2, then MT1 ──
+// Within each tier, lectures are interleaved across courses so every day touches multiple subjects
+// POST-MIDTERM (never studied — highest priority): 443:3, 412:5, 410:3, NSCI:4 = 15 total
+// MIDTERM 2 (studied superficially): 443:4, 412:2, 410:2, NSCI:2 = 10 total
+// MIDTERM 1 (studied superficially): 443:6, 412:4 (wait - 412 has no MT), 410:4, NSCI:6 = 20 total
+// Note: 412 has no midterms — all 13 weeks sorted by recency (post-midterm cutoff ~Wk9)
+
+// POST-MIDTERM tier — interleaved: 443 → 412 → NSCI → 410 rotation
+const POST_MT = [
+  {id:"l44313",c:"443",tag:"443",title:"L13 — post-MT2",                               desc:"443 — Lecture L13",            tier:"post"},
+  {id:"l4129b",c:"412",tag:"412",title:"Wk9 — Depression & Bipolar Pt3+4",             desc:"412 — Ch10 cont.",             tier:"post"},
+  {id:"lnsci27",c:"NSCI",tag:"nsci",title:"Ch27 + Ch28 — Cognitive Functions & Cortical States",desc:"NSCI — Mar 17 & 19",  tier:"post"},
+  {id:"l41010",c:"410",tag:"410",title:"Wk10 — Brain Development",                      desc:"410 — Mar 9",                 tier:"post"},
+
+  {id:"l44314",c:"443",tag:"443",title:"L14",                                           desc:"443 — Lecture L14",            tier:"post"},
+  {id:"l41210",c:"412",tag:"412",title:"Wk10 — Intellectual Disability",                desc:"412 — Ch5",                   tier:"post"},
+  {id:"lnsci29",c:"NSCI",tag:"nsci",title:"Ch29 + Ch30 — Attention & Memory",           desc:"NSCI — Mar 24 & 26",          tier:"post"},
+  {id:"l41011",c:"410",tag:"410",title:"Wk11 — Split Brain",                           desc:"410 — Mar 16",                 tier:"post"},
+
+  {id:"l44315",c:"443",tag:"443",title:"L15 — completes all 443",                      desc:"443 — Lecture L15",            tier:"post"},
+  {id:"l41211",c:"412",tag:"412",title:"Wk11 — ASD Pt1+2",                             desc:"412 — Ch6",                   tier:"post"},
+  {id:"lnsci32",c:"NSCI",tag:"nsci",title:"Ch32 + Ch33 — Emotion & Thinking/Planning", desc:"NSCI — Mar 31 & Apr 2",       tier:"post"},
+  {id:"l41013",c:"410",tag:"410",title:"Wk13 — Consciousness — completes 410",         desc:"410 — Mar 30",                 tier:"post"},
+
+  {id:"l41212b",c:"412",tag:"412",title:"Wk12 — Trauma Pt1+2",                         desc:"412 — Ch12",                  tier:"post"},
+  {id:"lnsci31",c:"NSCI",tag:"nsci",title:"Ch31 — Speech & Language I+II — completes NSCI",desc:"NSCI — Apr 7 & 9",        tier:"post"},
+  {id:"l41213",c:"412",tag:"412",title:"Wk13–14 — P-factor & Future Directions",       desc:"412",                         tier:"post"},
+];
+
+// MIDTERM 2 tier — interleaved: 443 → 412 → NSCI → 410 rotation
+const MT2 = [
+  {id:"l4436", c:"443",tag:"443",title:"L6 — begins MT2",                              desc:"443 — Lecture L6",             tier:"mt2"},
+  {id:"l41267",c:"412",tag:"412",title:"Wk6–7 — Anxiety & OCD Pt1+2",                 desc:"412 — Ch11",                  tier:"mt2"},
+  {id:"lnsci16",c:"NSCI",tag:"nsci",title:"Ch16 + Ch17 — Lower & Upper Motor Control", desc:"NSCI — Feb 10 & 12",          tier:"mt2"},
+  {id:"l4107", c:"410",tag:"410",title:"Wk7 — Temporal Lobe Dysfunction",              desc:"410 — Feb 16",                tier:"mt2"},
+
+  {id:"l4438", c:"443",tag:"443",title:"L8",                                           desc:"443 — Lecture L8",             tier:"mt2"},
+  {id:"l41289",c:"412",tag:"412",title:"Wk8–9 — Depression & Bipolar Pt1+2",          desc:"412 — Ch10",                  tier:"mt2"},
+  {id:"lnsci18",c:"NSCI",tag:"nsci",title:"Ch18 + Ch19 — Basal Ganglia & Cerebellum", desc:"NSCI — Feb 17–26",            tier:"mt2"},
+  {id:"l4108", c:"410",tag:"410",title:"Wk8 — Awareness & Attention",                 desc:"410 — Feb 23",                tier:"mt2"},
+
+  {id:"l44310",c:"443",tag:"443",title:"L10",                                          desc:"443 — Lecture L10",            tier:"mt2"},
+  {id:"l44311",c:"443",tag:"443",title:"L11 — completes MT2",                         desc:"443 — Lecture L11",            tier:"mt2"},
+];
+
+// MIDTERM 1 tier — interleaved: 443 → 412 → NSCI → 410 rotation
+const MT1 = [
+  {id:"l443i", c:"443",tag:"443",title:"Intro",                                        desc:"443 — Lecture: Intro",         tier:"mt1"},
+  {id:"l41212",c:"412",tag:"412",title:"Wk1–2 — Intro + Theories",                    desc:"412 — Ch1, Ch2, Ch3",         tier:"mt1"},
+  {id:"lnsci1", c:"NSCI",tag:"nsci",title:"Ch1 — Intro to Systems Neuroscience",      desc:"NSCI — Jan 6 & 8",            tier:"mt1"},
+  {id:"l4102", c:"410",tag:"410",title:"Wk2 — Methods of Cognitive Neuroscience",     desc:"410 — Jan 12",                tier:"mt1"},
+
+  {id:"l4431", c:"443",tag:"443",title:"L1",                                          desc:"443 — Lecture L1",             tier:"mt1"},
+  {id:"l4123", c:"412",tag:"412",title:"Wk3 — Research Methods + ADHD Pt1",          desc:"412 — Ch4, Ch8",              tier:"mt1"},
+  {id:"lnsci12",c:"NSCI",tag:"nsci",title:"Ch12 — Somatosensory System",              desc:"NSCI — Jan 13 & 15",          tier:"mt1"},
+  {id:"l4103", c:"410",tag:"410",title:"Wk3 — Plasticity & Phantom Limb",            desc:"410 — Jan 19",                tier:"mt1"},
+
+  {id:"l4432", c:"443",tag:"443",title:"L2",                                          desc:"443 — Lecture L2",             tier:"mt1"},
+  {id:"l4124", c:"412",tag:"412",title:"Wk4 — ADHD Pt2 + Conduct Pt1",              desc:"412 — Ch8 cont., Ch9",        tier:"mt1"},
+  {id:"lnsci9a",c:"NSCI",tag:"nsci",title:"Ch9 — Vision: The Eye I + II",            desc:"NSCI — Jan 20 & 22",          tier:"mt1"},
+  {id:"l4104", c:"410",tag:"410",title:"Wk4 — Blindsight",                           desc:"410 — Jan 26",                tier:"mt1"},
+
+  {id:"l4433", c:"443",tag:"443",title:"L3",                                          desc:"443 — Lecture L3",             tier:"mt1"},
+  {id:"l4125", c:"412",tag:"412",title:"Wk5 — Conduct Pt2 + Substance Use",          desc:"412 — Ch9 cont., Ch13",       tier:"mt1"},
+  {id:"lnsci9b",c:"NSCI",tag:"nsci",title:"Ch9 — Central Visual Pathways I + II",    desc:"NSCI — Jan 27 & 29",          tier:"mt1"},
+  {id:"l4105", c:"410",tag:"410",title:"Wk5 — Temporal Lobe Function",               desc:"410 — Feb 2",                 tier:"mt1"},
+
+  {id:"l4434", c:"443",tag:"443",title:"L4",                                          desc:"443 — Lecture L4",             tier:"mt1"},
+  {id:"lnsci13",c:"NSCI",tag:"nsci",title:"Ch13 — Auditory System",                  desc:"NSCI — Feb 3",                tier:"mt1"},
+  {id:"l4435", c:"443",tag:"443",title:"L5 — completes MT1",                         desc:"443 — Lecture L5",             tier:"mt1"},
+  {id:"lnsci11",c:"NSCI",tag:"nsci",title:"Ch11 — Vestibular System",                desc:"NSCI — Feb 5",                tier:"mt1"},
+];
+
+const LECS = [...POST_MT, ...MT2, ...MT1];
+
+const CTOTALS={"443":13,"412":13,"410":9,"NSCI":12};
+
+// ══════════════════════════════════════════════════════
+// FIXED REVIEW BLOCKS
+// ══════════════════════════════════════════════════════
+const RBLOCKS = {
+  "2026-04-19":[
+    {id:"r191",tag:"443",  title:"Review pass 1 — lecture by lecture, slides only",      time:"8:00–10:00",  desc:"All 13 lectures"},
+    {id:"r192",tag:"recall",title:"Active recall — key point per lecture, no notes",     time:"10:00–10:40", desc:"Flag blanks"},
+    {id:"r193",tag:"443",  title:"Review pass 2 — fix blanks only",                      time:"11:30–1:00",  desc:"Targeted"},
+    {id:"r194",tag:"memo", title:"Record final 443 exam guide memo",                     time:"1:00–1:30",   desc:"Exam morning audio"},
+  ],
+  "2026-04-26":[
+    {id:"r261",tag:"412",  title:"412 full review — Wk1→Wk14, slides only",             time:"8:00–11:00",  desc:""},
+    {id:"r262",tag:"recall",title:"Active recall — key fact per disorder, no notes",    time:"11:00–11:45", desc:"Flag blanks"},
+    {id:"r263",tag:"412",  title:"Fix blanks — targeted second pass",                    time:"12:30–2:00",  desc:""},
+    {id:"r264",tag:"memo", title:"Record final 412 exam guide memo",                     time:"2:00–2:30",   desc:"Exam morning audio"},
+  ],
+  "2026-04-27":[
+    {id:"r271",tag:"412",  title:"412 light skim — all topics, slides only",             time:"8:00–10:30",  desc:""},
+    {id:"r272",tag:"recall",title:"412 self-quiz — one question per topic, no notes",   time:"10:30–11:30", desc:""},
+    {id:"r273",tag:"412",  title:"Fix any remaining gaps — targeted only",               time:"12:00–2:00",  desc:""},
+    {id:"r274",tag:"memo", title:"Listen to 412 exam guide memo",                        time:"2:00–2:30",   desc:"Audio review"},
+    {id:"r275",tag:"recall",title:"Rest + eat well before exam",                         time:"2:30–5:00",   desc:"Hard stop 5pm · Exam at 6:30pm"},
+  ],
+  "2026-04-28":[
+    {id:"r281",tag:"410",  title:"410 full review — Wk2→Wk3→Wk4→Wk5→Wk7→Wk8→Wk10→Wk11→Wk13",time:"8:00–9:30",desc:"Morning · 9 lectures"},
+    {id:"r282",tag:"recall",title:"410 self-test — key patient + finding per lecture",  time:"9:30–10:00",  desc:""},
+    {id:"r283",tag:"nsci", title:"NSCI full review — Ch1 through Ch31",                 time:"5:30–8:00",   desc:"Evening after work · slides only"},
+    {id:"r284",tag:"recall",title:"NSCI self-test — system → pathway → concept",       time:"8:00–8:30",   desc:"Flag blanks for Wed"},
+  ],
+  "2026-04-29":[
+    {id:"r291",tag:"410",  title:"410 — fix Tue blanks, targeted pass only",            time:"8:00–9:30",   desc:""},
+    {id:"r292",tag:"nsci", title:"NSCI — fix Tue blanks, targeted pass only",           time:"9:30–11:00",  desc:""},
+    {id:"r293",tag:"recall",title:"10 mixed questions across 410 + NSCI — done",        time:"11:00–11:30", desc:"Hard stop. Sleep early."},
+  ],
+};
+
+// ══════════════════════════════════════════════════════
+// TIME SLOTS PER DAY TYPE
+// ══════════════════════════════════════════════════════
+const T5 = ["8:00–9:30","10:00–11:30","1:00–2:30","3:00–4:30","5:00–6:30"];
+const T4 = ["8:00–9:30","10:00–11:30","1:00–2:30","3:00–4:30"];
+const T3 = ["8:00–9:30","10:00–11:30","1:00–2:30"];
+const T2 = ["8:00–9:30","10:00–11:30"];
+const T1 = ["8:30–10:00"];
+const TWORK4=["8:00–9:30","10:00–11:30","5:30–7:00","7:30–9:00"]; // Tue work: morning + evening
+const TPOSTEXAM=["After exam","","",""];
+
+function getSlots(dk, cap){
+  const d=DAYS[dk];
+  if(d.t==="mini") return T1;
+  if(cap===1&&d.t==="free") return ["Any time today"];
+  if(d.t==="work") return TWORK4.slice(0,cap);
+  if(d.t==="exam") return TPOSTEXAM.slice(0,cap);
+  if(cap===5) return T5;
+  if(cap===4) return T4;
+  if(cap===3) return T3;
+  if(cap===2) return T2;
+  return T1;
+}
+
+// ══════════════════════════════════════════════════════
+// SCHEDULER — flat priority queue: post-MT first, then MT2, then MT1
+// LECS array is already ordered and interleaved across courses per tier
+function buildSchedule(){
+  const sch={};
+  const done=new Set(Object.keys(state.completed).filter(id=>state.completed[id]));
+  const queue=LECS.filter(l=>!done.has(l.id)).map(l=>({...l}));
+
+  for(const dk of STUDY_DATES){
+    const def=DAYS[dk];
+    const cap=def.cap;
+    sch[dk]={blocks:[]};
+    const slots=getSlots(dk,cap);
+    for(let i=0;i<cap;i++){
+      const pick=queue.shift();
+      if(pick) sch[dk].blocks.push({...pick,time:slots[i]||""});
+    }
+  }
+
+  for(const dk of Object.keys(RBLOCKS)){
+    if(!sch[dk]) sch[dk]={blocks:[]};
+    sch[dk].reviewBlocks=RBLOCKS[dk];
+  }
+  return sch;
+}
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let state={currentDate:null,completed:{},carriedTo:{},schedule:null};
+function save(){localStorage.setItem("stt26e",JSON.stringify({completed:state.completed,carriedTo:state.carriedTo}));}
+function load(){try{const s=localStorage.getItem("stt26e");if(s){const p=JSON.parse(s);state.completed=p.completed||{};state.carriedTo=p.carriedTo||{};}}catch(e){}}
+function getSch(){if(!state.schedule)state.schedule=buildSchedule();return state.schedule;}
+function rebuild(){state.schedule=buildSchedule();}
+
+// ══════════════════════════════════════════════════════
+// DATE RESOLVING
+// ══════════════════════════════════════════════════════
+const AL={
+  "8":"2026-04-08","wed":"2026-04-08","wednesday":"2026-04-08",
+  "9":"2026-04-09","thu":"2026-04-09","thursday":"2026-04-09",
+  "10":"2026-04-10","fri":"2026-04-10","friday":"2026-04-10",
+  "11":"2026-04-11","sat":"2026-04-11","saturday":"2026-04-11",
+  "12":"2026-04-12","sun":"2026-04-12","sunday":"2026-04-12",
+  "13":"2026-04-13","mon":"2026-04-13","monday":"2026-04-13",
+  "14":"2026-04-14","tue":"2026-04-14","tuesday":"2026-04-14",
+  "15":"2026-04-15","16":"2026-04-16","17":"2026-04-17","18":"2026-04-18",
+  "19":"2026-04-19","20":"2026-04-20","21":"2026-04-21","22":"2026-04-22",
+  "23":"2026-04-23","24":"2026-04-24","25":"2026-04-25","26":"2026-04-26",
+  "27":"2026-04-27","28":"2026-04-28","29":"2026-04-29","30":"2026-04-30",
+};
+function resolveDate(v){
+  const r=v.trim().toLowerCase();
+  if(r==="today"){const n=new Date();const k=`2026-04-${String(n.getDate()).padStart(2,"0")}`;return DAYS[k]?k:null;}
+  if(AL[r])return AL[r];
+  const m=r.match(/(?:apr(?:il)?\.?\s*)(\d{1,2})/);
+  if(m){const k=`2026-04-${m[1].padStart(2,"0")}`;return DAYS[k]?k:null;}
+  if(/^\d{1,2}$/.test(r)){const k=`2026-04-${r.padStart(2,"0")}`;return DAYS[k]?k:null;}
+  return null;
+}
+
+// ══════════════════════════════════════════════════════
+// GET BLOCKS FOR DATE
+// ══════════════════════════════════════════════════════
+function getBlocks(dk){
+  const sch=getSch();
+  const day=sch[dk]||{blocks:[],reviewBlocks:[]};
+  const carried=(state.carriedTo[dk]||[]).map(b=>({...b,carried:true,time:"(carried)"}));
+  const sched=day.blocks||[];
+  const rev=day.reviewBlocks||[];
+  return[...carried,...sched,...rev];
+}
+
+// ══════════════════════════════════════════════════════
+// COURSE PROGRESS
+// ══════════════════════════════════════════════════════
+function progress(){
+  const done={"443":0,"412":0,"410":0,"NSCI":0};
+  const ids=new Set(LECS.map(l=>l.id));
+  Object.keys(state.completed).forEach(id=>{
+    if(!state.completed[id]||!ids.has(id))return;
+    const l=LECS.find(x=>x.id===id);
+    if(l&&done[l.c]!==undefined)done[l.c]++;
+  });
+  return done;
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+function init(){
+  load();
+  document.getElementById("hdrDate").textContent=
+    new Date().toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"});
+  renderInput();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER INPUT
+// ══════════════════════════════════════════════════════
+function renderInput(){
+  state.currentDate=null;
+  document.getElementById("bbar").style.display="none";
+  document.getElementById("main").innerHTML=`
+    <div class="di">
+      <div>
+        <h2>What day is it?<br><em>Tell me and I'll load your schedule.</em></h2>
+        <p style="margin-top:4px">Type "Apr 9", "9", "today", or click below.</p>
+      </div>
+      <div class="di-wrap">
+        <input class="di-inp" id="dif" type="text" placeholder="e.g. Apr 9 or today" autocomplete="off"/>
+        <button class="btn" onclick="sub()">go</button>
+      </div>
+      <div>
+        <p style="margin-bottom:9px;font-size:11px;color:var(--text4);font-style:italic">April 2026</p>
+        <div class="qdays">
+          ${ALL_DATES.map(d=>{
+            const def=DAYS[d];
+            const isOff=def.t==="off";
+            const isExam=def.t==="exam"||def.t==="review-exam";
+            const label=def.l.split(" ").slice(1).join(" ");
+            return`<div class="qd${isOff?" off":""}${isExam?" exam":""}" onclick="go('${d}')">${label}</div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>`;
+  const inp=document.getElementById("dif");
+  if(inp){inp.focus();inp.addEventListener("keydown",e=>{if(e.key==="Enter")sub();});}
+}
+
+function sub(){
+  const inp=document.getElementById("dif");
+  if(!inp)return;
+  const dk=resolveDate(inp.value);
+  if(!dk){showToast("Not found — try \"Apr 9\" or just \"9\"");return;}
+  go(dk);
+}
+
+function go(dk){
+  state.currentDate=dk;
+  save();
+  renderDay(dk);
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER DAY
+// ══════════════════════════════════════════════════════
+function renderDay(dk){
+  const def=DAYS[dk];if(!def)return;
+  const isOff=def.t==="off";
+  const isExam=def.t==="exam";
+  const isRev=def.t==="review";
+  const isWRev=def.t==="work-review";
+  const isRExam=def.t==="review-exam";
+  const isWork=def.t==="work";
+  const isMini=def.t==="mini";
+  const isStudy=["free","work","mini"].includes(def.t)||isExam;
+
+  const all=getBlocks(dk);
+  const doneN=all.filter(b=>state.completed[b.id]).length;
+  const pct=all.length?Math.round(doneN/all.length*100):0;
+  const prog=progress();
+
+  let c="";
+
+  if(isOff){
+    c=`<div class="off-box"><h3>${def.wh||""} — Rest day</h3><p>${def.note}</p></div>`;
+  } else if(isExam&&!isRExam){
+    c=`<div class="exbox"><h3>Exam — ${def.ex.join(" + ")}</h3><p>${def.note}</p></div>`;
+    if(all.length) c+=`<div class="sec" style="margin-top:8px">After exam · ${def.cap} lectures</div><div class="blist">${all.map(rb).join("")}</div>`;
+    else c+=`<div class="off-box" style="margin-top:12px"><h3>Go do it.</h3><p>Memo on the way in. Trust the prep.</p></div>`;
+  } else if(isRExam){
+    if(def.note)c+=`<div class="rnote">${def.note}</div>`;
+    c+=`<div class="sec">Review — ${def.rf}</div><div class="blist">${all.map(rb).join("")}</div>`;
+  } else if(isRev){
+    if(def.note)c+=`<div class="rnote">${def.note}</div>`;
+    c+=`<div class="sec">Review — ${def.rf}</div><div class="blist">${all.map(rb).join("")}</div>`;
+  } else if(isWRev){
+    c+=`<div class="wbanner"><div><div class="wbl">${def.wh}</div><div class="wbs">Study morning (8–11am) and evening (after 5:30pm)</div></div></div>`;
+    if(def.note)c+=`<div class="rnote">${def.note}</div>`;
+    c+=`<div class="sec">Review — ${def.rf}</div><div class="blist">${all.map(rb).join("")}</div>`;
+  } else {
+    // study day
+    if(isWork) c+=`<div class="wbanner"><div><div class="wbl">${def.wh}</div><div class="wbs">Study morning + evening · listen to memos on commute</div></div></div>`;
+    const lecs=all.filter(b=>!["recall","memo"].includes(b.tag));
+    c+=`<div class="sec">${lecs.length} lecture${lecs.length!==1?"s":""} · ${def.note.split("·")[0].trim()}</div>`;
+    c+=`<div class="blist">${all.map(rb).join("")}</div>`;
+    c+=`<div class="ibox">After each lecture: 25 min active recall → 20 min voice memo. Built into your session time.</div>`;
+  }
+
+  const showStats=!isOff&&all.length>0;
+  const subtitle=isExam?"exam day":isOff?"rest day":(isRev||isRExam||isWRev)?"review day":isWork?"work + study":isMini?"mini day":`${def.dn} · ${def.note.split("·")[0].trim()}`;
+
+  document.getElementById("main").innerHTML=`
+    <div class="dv">
+      <div class="dh">
+        <div>
+          <div class="dt">${def.l}</div>
+          <div class="dsub">${subtitle}</div>
+        </div>
+        ${showStats?`<div class="stats"><div style="text-align:right"><div class="sv" id="sv1">${doneN}/${all.length}</div><div class="sl">done</div></div><div style="text-align:right"><div class="sv" id="sv2">${pct}%</div><div class="sl">complete</div></div></div>`:""}
+      </div>
+      ${showStats?`<div class="pb-wrap"><div class="pb-lbl"><span>today's progress</span><span id="pbl">${doneN} of ${all.length}</span></div><div class="pb-bg"><div class="pb-fill" id="pbf" style="width:${pct}%"></div></div></div>`:""}
+      <div class="cp-grid">
+        ${["443","412","410","NSCI"].map(co=>{
+          const d=Math.min(prog[co]||0,CTOTALS[co]);
+          const p=Math.round(d/CTOTALS[co]*100);
+          return`<div><div class="cp-name">${co}</div><div class="cp-bg"><div class="cp-bar f${co.toLowerCase()}" id="cpb${co}" style="width:${p}%"></div></div><div class="cp-cnt" id="cpc${co}">${d}/${CTOTALS[co]}</div></div>`;
+        }).join("")}
+      </div>
+      ${c}
+    </div>`;
+
+  document.getElementById("bbar").style.display="flex";
+  updBbar(all);
+}
+
+function rb(b){
+  const done=state.completed[b.id];
+  const nm={"443":"443","412":"412","410":"410","nsci":"NSCI","recall":"recall","memo":"memo","rest":"rest"};
+  const tierBadge=b.tier==="post"?`<span class="tbadge tpost">post-MT</span>`:b.tier==="mt2"?`<span class="tbadge tmt2">MT2</span>`:b.tier==="mt1"?`<span class="tbadge tmt1">MT1</span>`:"";
+  return`<div class="bc${done?" done":""}${b.carried?" carried":""}" id="bc${b.id}"><div class="bi"><div class="bchk${done?" chk":""}" onclick="tog('${b.id}')"></div><div class="bm"><div class="btop"><span class="ctag t${b.tag}">${nm[b.tag]||b.tag}</span>${tierBadge}${b.carried?`<span class="cbadge">carried</span>`:""}</div><div class="bcon">${b.title}</div><div class="btm">${b.time||""}${b.desc&&b.desc!==b.title?" · "+b.desc:""}</div></div></div></div>`;
+}
+
+function updBbar(blocks){
+  const done=blocks.filter(b=>state.completed[b.id]).length;
+  const el=document.getElementById("bbarl");
+  if(el)el.innerHTML=`<strong>${done}</strong> done &nbsp;·&nbsp; <strong>${blocks.length-done}</strong> remaining`;
+}
+
+// ══════════════════════════════════════════════════════
+// TOGGLE
+// ══════════════════════════════════════════════════════
+function tog(id){
+  state.completed[id]=!state.completed[id];
+  save();
+  // Rebuild schedule if a lecture was toggled (affects future days)
+  if(LECS.find(l=>l.id===id)) rebuild();
+
+  const all=getBlocks(state.currentDate);
+  const done=all.filter(b=>state.completed[b.id]).length;
+  const pct=all.length?Math.round(done/all.length*100):0;
+
+  const card=document.getElementById(`bc${id}`);
+  if(card){card.classList.toggle("done",!!state.completed[id]);card.querySelector(".bchk").classList.toggle("chk",!!state.completed[id]);}
+
+  // Update progress bar
+  const pbf=document.getElementById("pbf");if(pbf)pbf.style.width=pct+"%";
+  const pbl=document.getElementById("pbl");if(pbl)pbl.textContent=`${done} of ${all.length}`;
+  const sv1=document.getElementById("sv1");if(sv1)sv1.textContent=`${done}/${all.length}`;
+  const sv2=document.getElementById("sv2");if(sv2)sv2.textContent=`${pct}%`;
+  updBbar(all);
+
+  // Update course progress bars
+  const prog=progress();
+  ["443","412","410","NSCI"].forEach(co=>{
+    const d=Math.min(prog[co]||0,CTOTALS[co]);
+    const bar=document.getElementById(`cpb${co}`);if(bar)bar.style.width=Math.round(d/CTOTALS[co]*100)+"%";
+    const cnt=document.getElementById(`cpc${co}`);if(cnt)cnt.textContent=`${d}/${CTOTALS[co]}`;
+  });
+  if(pct===100)showToast("All done — great work today.");
+}
+
+// ══════════════════════════════════════════════════════
+// END DAY
+// ══════════════════════════════════════════════════════
+// ── Smart carry: distributes undone blocks across future days by available capacity ──
+function futureDayCapacity(dk){
+  // How many lecture slots are still free on this day after scheduled + carried blocks
+  const def=DAYS[dk];
+  if(!["free","work","mini"].includes(def.t)) return 0;
+  const cap=def.cap;
+  const sch=getSch();
+  const scheduled=(sch[dk]?.blocks||[]).length;
+  const carried=(state.carriedTo[dk]||[]).filter(b=>!["recall","memo"].includes(b.tag)).length;
+  return Math.max(0, cap - scheduled - carried);
+}
+
+function smartCarry(from, undone){
+  // undone: array of blocks to redistribute (no recall/memo)
+  // Returns: {date -> [blocks]} placement map, and summary string
+  const placement={};
+  const queue=[...undone];
+  const futureDates=ALL_DATES.filter(d=>d>from&&["free","work","mini"].includes(DAYS[d].t));
+
+  for(const dk of futureDates){
+    if(!queue.length) break;
+    const space=futureDayCapacity(dk);
+    if(space<=0) continue;
+    const toPlace=queue.splice(0,space);
+    placement[dk]=toPlace;
+  }
+
+  // If anything left over, pile onto last available study day
+  if(queue.length){
+    const last=futureDates[futureDates.length-1];
+    if(last){
+      if(!placement[last]) placement[last]=[];
+      placement[last].push(...queue);
+    }
+  }
+  return placement;
+}
+
+function showEndDay(){
+  const dk=state.currentDate;
+  const all=getBlocks(dk);
+  const undone=all.filter(b=>!state.completed[b.id]&&!["recall","memo"].includes(b.tag));
+  if(!undone.length){
+    document.getElementById("mc").innerHTML=`<h3>Day complete.</h3><p>Every block done. Rest up.</p><div class="ma"><button class="btn" onclick="closeMo();changeDay()">Start new day</button></div>`;
+    document.getElementById("mo").classList.remove("hidden");return;
+  }
+
+  const placement=smartCarry(dk,undone);
+  const dc={"443":"var(--c443)","412":"var(--c412)","410":"var(--c410)","nsci":"var(--cnsci)","recall":"var(--crecall)","memo":"var(--cmemo)","rest":"var(--text3)"};
+  const tn={"443":"443","412":"412","410":"410","nsci":"NSCI","recall":"recall","memo":"memo","rest":"rest"};
+
+  // Build placement summary grouped by destination day
+  let placementHtml="";
+  for(const [destDk, blocks] of Object.entries(placement)){
+    placementHtml+=`<div style="font-size:11px;color:var(--text3);font-style:italic;margin:10px 0 4px">→ ${DAYS[destDk].l}</div>`;
+    placementHtml+=blocks.map(b=>`<div class="mi"><div class="mid" style="background:${dc[b.tag]||"var(--text3)"}"></div>${tn[b.tag]||b.tag} — ${b.title}</div>`).join("");
+  }
+
+  const destDays=[...new Set(Object.keys(placement))].map(d=>DAYS[d].l).join(", ");
+
+  document.getElementById("mc").innerHTML=`
+    <h3>End of day</h3>
+    <p>${undone.length} block${undone.length>1?"s":""} not done. Distributed across days with available space:</p>
+    <div class="ml">${placementHtml}</div>
+    <div class="ma"><button class="btn-g" onclick="closeMo()">Cancel</button><button class="btn" onclick="confirmEnd('${dk}')">Carry forward</button></div>`;
+  document.getElementById("mo").classList.remove("hidden");
+
+  // Store pending placement for confirmEnd
+  window._pendingPlacement={from:dk, placement};
+}
+
+function confirmEnd(from){
+  if(!window._pendingPlacement||window._pendingPlacement.from!==from) return;
+  const {placement}=window._pendingPlacement;
+
+  for(const [destDk, blocks] of Object.entries(placement)){
+    if(!state.carriedTo[destDk]) state.carriedTo[destDk]=[];
+    // Remove any previous carry from this source day to avoid dupes
+    state.carriedTo[destDk]=state.carriedTo[destDk].filter(b=>b.carriedFrom!==from);
+    blocks.forEach(b=>state.carriedTo[destDk].push({...b,carried:true,carriedFrom:from,time:null}));
+  }
+
+  const totalBlocks=Object.values(placement).reduce((s,a)=>s+a.length,0);
+  const dayCount=Object.keys(placement).length;
+  save();rebuild();closeMo();
+  showToast(`${totalBlocks} block${totalBlocks>1?"s":""} distributed across ${dayCount} day${dayCount>1?"s":""}`);
+  setTimeout(()=>changeDay(),700);
+  window._pendingPlacement=null;
+}
+
+function changeDay(){state.currentDate=null;renderInput();}
+function closeMo(){document.getElementById("mo").classList.add("hidden");}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800);}
+document.getElementById("mo").addEventListener("click",function(e){if(e.target===this)closeMo();});
+init();
+</script>
+</body>
+</html>
